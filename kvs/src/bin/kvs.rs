@@ -1,5 +1,6 @@
 extern crate clap;
 use clap::{App, Arg, SubCommand};
+use kvs::KvStore;
 use std::process;
 
 fn main() {
@@ -16,12 +17,27 @@ fn main() {
             .arg(Arg::with_name("key").required(true)))
         .get_matches();
 
-    match matches.subcommand_name() {
-        Some("key") => print_unimplemented(),
-        Some("set") => print_unimplemented(),
-        Some("rm") => print_unimplemented(),
+    let mut store = KvStore::new();
+
+    match matches.subcommand() {
+        ("get", Some(matches)) => {
+            let key = matches.value_of("key").unwrap().to_string();
+            let _value = store.get(key);
+            print_unimplemented();
+        },
+        ("set", Some(matches)) => {
+            let key = matches.value_of("key").unwrap().to_string();
+            let value = matches.value_of("value").unwrap().to_string();
+            store.set(key, value);
+            print_unimplemented();
+        },
+        ("rm", Some(matches)) => {
+            let key = matches.value_of("key").unwrap().to_string();
+            store.remove(key);
+            print_unimplemented();
+        }
         _ => {
-            eprintln!("No such subcommand");
+            eprintln!("Invalid usage: no such subcommand");
             process::exit(1);
         }
     }
