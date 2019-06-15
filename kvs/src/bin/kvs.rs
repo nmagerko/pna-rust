@@ -17,12 +17,17 @@ fn main() {
         .get_matches();
 
     match matches.subcommand_name() {
-        Some("key") => {},
-        Some("set") => {},
-        Some("rm") => {},
+        Some("key") => print_unimplemented(),
+        Some("set") => print_unimplemented(),
+        Some("rm") => print_unimplemented(),
         _ => {
             eprintln!("No such subcommand");
             process::exit(1);
         }
     }
+}
+
+fn print_unimplemented() {
+    eprintln!("unimplemented");
+    process::exit(1);
 }
