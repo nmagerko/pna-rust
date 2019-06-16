@@ -16,7 +16,6 @@ pub struct KvStore {
 }
 
 impl KvStore {
-
     /// Creates a new `KvStore`
     pub fn new() -> KvStore {
         KvStore {
@@ -37,10 +36,7 @@ impl KvStore {
     /// kvs.get(String::from("key"));
     /// ```
     pub fn get(&mut self, key: String) -> Option<String> {
-        match self.map.get(&key) {
-            Some(s) => Some(s.to_string()),
-            None => None,
-        }
+        self.map.get(&key).cloned()
     }
 
     /// Sets a value for a given key. If the key is already present, it is overwrriten.
