@@ -10,7 +10,7 @@ fn main() {
 
     match opts.cmd {
         Command::Get { key } => {
-            let _value = store.get(key);
+            store.get(key);
             print_unimplemented();
         }
         Command::Set { key, value } => {
