@@ -10,15 +10,18 @@
 use std::collections::HashMap;
 
 /// Stores key-value relationships
+#[derive(Default)]
 pub struct KvStore {
-    map: HashMap<String, String>
+    map: HashMap<String, String>,
 }
 
 impl KvStore {
 
     /// Creates a new `KvStore`
     pub fn new() -> KvStore {
-        KvStore{ map: HashMap::new() }
+        KvStore {
+            map: HashMap::new(),
+        }
     }
 
     /// Retrieves the value for a given key (if that key is valid)
@@ -34,11 +37,10 @@ impl KvStore {
     /// kvs.get(String::from("key"));
     /// ```
     pub fn get(&mut self, key: String) -> Option<String> {
-        let result = match self.map.get(&key) {
+        match self.map.get(&key) {
             Some(s) => Some(s.to_string()),
-            None => None
-        };
-        result
+            None => None,
+        }
     }
 
     /// Sets a value for a given key. If the key is already present, it is overwrriten.
