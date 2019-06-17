@@ -1,27 +1,43 @@
 extern crate structopt;
 
-use kvs::KvStore;
+use kvs::{KvError, KvStore, Result};
 use std::process;
 use structopt::StructOpt;
 
-fn main() {
+fn main() -> Result<()> {
     let opts = Opts::from_args();
-    let mut store = KvStore::new();
+    let mut store = KvStore::new()?;
 
     match opts.cmd {
         Command::Get { key } => {
-            store.get(key);
-            print_unimplemented();
+            match store.get(key) {
+                Ok(Some(value)) => println!("{}", value),
+                Ok(None) => {
+                    println!("Key not found");
+                }
+                Err(err) => {
+                    eprintln!("{}", err);
+                }
+            };
         }
         Command::Set { key, value } => {
-            store.set(key, value);
-            print_unimplemented();
+            store.set(key, value)?;
         }
         Command::Remove { key } => {
-            store.remove(key);
-            print_unimplemented();
+            match store.remove(key) {
+                Ok(()) => {}
+                Err(KvError::BadRemovalError(_)) => {
+                    println!("Key not found");
+                    process::exit(1);
+                }
+                Err(err) => {
+                    eprintln!("{}", err);
+                }
+            };
         }
-    }
+    };
+
+    Ok(())
 }
 
 #[derive(StructOpt)]
@@ -38,9 +54,4 @@ enum Command {
     Set { key: String, value: String },
     #[structopt(name = "rm")]
     Remove { key: String },
-}
-
-fn print_unimplemented() {
-    eprintln!("unimplemented");
-    process::exit(1);
 }
