@@ -4,11 +4,18 @@ use serde_json::{from_str, to_string};
 use std::io::{BufRead, Seek, Write};
 use std::{collections, env, fs, io, path};
 
+/// The file name of the primary log file
 const LOGFILE: &str = "kvs.log";
+/// The file name of the temporary log file while compacting
+const COMPACTFILE: &str = "compact.log";
+/// The size of the log file needed before compaction occurs
+const COMPACT_BYTES: u64 = 1024 * 1024;
 
 /// Stores key-value relationships
 pub struct KvStore {
+    root: path::PathBuf,
     log: fs::File,
+    size: u64,
     entries: collections::HashMap<String, u64>,
 }
 
@@ -43,13 +50,15 @@ impl KvStore {
     /// let mut kvs = kvs::KvStore::open(std::path::Path::new("/var/db/"));
     /// ```
     pub fn open(path: &path::Path) -> Result<KvStore> {
-        if !path.exists() || !path.is_dir() {
+        if !path.is_dir() {
             let path_str = path.to_str().unwrap().to_owned();
             return Err(KvError::BadPathError(path_str));
         }
-        let mut log = initialize_logfile(path.to_path_buf())?;
+
+        let root = path.to_path_buf();
+        let (mut log, size) = initialize_logfile(&root)?;
         let entries = initialize_entries(&mut log);
-        Ok(KvStore { log, entries })
+        Ok(KvStore { root, log, size, entries })
     }
 
     /// Retrieves the value for a given key (if that key is valid)
@@ -119,6 +128,10 @@ impl KvStore {
         let offset = self.log.seek(io::SeekFrom::End(0))?;
         self.log.write_all(&serialized)?;
         self.entries.insert(key, offset);
+        self.size += serialized.len() as u64;
+        if self.size > COMPACT_BYTES {
+            self.compact()?;
+        }
         Ok(())
     }
 
@@ -152,21 +165,69 @@ impl KvStore {
                 self.log.seek(io::SeekFrom::End(0))?;
                 self.log.write_all(&serialized)?;
                 self.entries.remove(&key);
+                self.size += serialized.len() as u64;
+                if self.size > COMPACT_BYTES {
+                    self.compact()?;
+                }
                 Ok(())
             }
             None => Err(KvError::BadRemovalError(key)),
         }
     }
+
+    fn compact(&mut self) -> Result<()> {
+        let mut compactfile = initialize_compactfile(&self.root)?;
+        let mut writer = io::BufWriter::new(&mut compactfile);
+        let mut entries = collections::HashMap::new();
+        let mut offset: usize = 0;
+
+        let iter: Vec<(&String, &u64)> = self.entries.iter().collect();
+        for (key, pos) in iter {
+            entries.insert(key.to_owned(), offset as u64);
+
+            self.log.seek(io::SeekFrom::Start(*pos))?;
+            let mut reader = io::BufReader::new(&mut self.log);
+            let mut line = String::new();
+            reader.read_line(&mut line)?;
+            offset += line.len();
+            writer.write_all(&(line.into_bytes()))?;
+        }
+        drop(writer);
+        drop(compactfile);
+        publish_compactfile(&self.root)?;
+
+        let (log, size) = initialize_logfile(&self.root)?;
+        self.log = log;
+        self.size = size;
+        self.entries = entries;
+        Ok(())
+    }
 }
 
-fn initialize_logfile(path_buf: path::PathBuf) -> std::result::Result<fs::File, io::Error> {
-    let log_path = path_buf.join(LOGFILE);
-    fs::OpenOptions::new()
+fn initialize_logfile(root: &path::PathBuf) -> std::result::Result<(fs::File, u64), io::Error> {
+    let log_path = root.join(LOGFILE);
+    let log = fs::OpenOptions::new()
         .create(true)
         .read(true)
         .write(true)
         .append(true)
-        .open(log_path)
+        .open(&log_path)?;
+    let log_size = fs::metadata(log_path)?.len();
+    Ok((log, log_size))
+}
+
+fn initialize_compactfile(root: &path::PathBuf) -> std::result::Result<fs::File, io::Error> {
+    let compact_path = root.join(COMPACTFILE);
+    fs::OpenOptions::new()
+        .create(true).truncate(true).read(true).write(true).open(compact_path)
+}
+
+fn publish_compactfile(root: &path::PathBuf) -> std::result::Result<(), io::Error> {
+    let log_path = root.join(LOGFILE);
+    let compact_path = root.join(COMPACTFILE);
+    fs::copy(&compact_path, log_path)?;
+    fs::remove_file(compact_path)?;
+    Ok(())
 }
 
 fn initialize_entries(log: &mut fs::File) -> collections::HashMap<String, u64> {
