@@ -58,7 +58,12 @@ impl KvStore {
         let root = path.to_path_buf();
         let (mut log, size) = initialize_logfile(&root)?;
         let entries = initialize_entries(&mut log);
-        Ok(KvStore { root, log, size, entries })
+        Ok(KvStore {
+            root,
+            log,
+            size,
+            entries,
+        })
     }
 
     /// Retrieves the value for a given key (if that key is valid)
@@ -219,7 +224,11 @@ fn initialize_logfile(root: &path::PathBuf) -> std::result::Result<(fs::File, u6
 fn initialize_compactfile(root: &path::PathBuf) -> std::result::Result<fs::File, io::Error> {
     let compact_path = root.join(COMPACTFILE);
     fs::OpenOptions::new()
-        .create(true).truncate(true).read(true).write(true).open(compact_path)
+        .create(true)
+        .truncate(true)
+        .read(true)
+        .write(true)
+        .open(compact_path)
 }
 
 fn publish_compactfile(root: &path::PathBuf) -> std::result::Result<(), io::Error> {
