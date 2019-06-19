@@ -4,18 +4,22 @@ This is my implementation of PingCAP's [Practical Networking Applications](https
 
 In short, the PNA project consists of labs that work towards the development of a "high-performance, networked, parallel and asynchronous key/value store." Tests are provided to help determine correctness while working through these labs. 
 
-Note that I compare my implementation to the provided reference code _once I'm finished_ with each lab to learn best practices that are not mentioned by `clippy`. Additionally, I try to add any extensions that are suggested or that I find interesting. For that reason my code should not exactly match up with the PNA reference code, but will have many similarities.
+### Deviations
 
-### Enhancements
-
-I will keep track of any enhancements I add here. I expect that these will usually be the PingCAP-suggested extensions, but who knows!
+I will keep track of how my implementation differs from the reference here. I expect that these will involve the PingCAP-suggested extensions, but they may also include reflections about performance (good or bad) and simplicity.
 
 ##### Part 1 (in-memory key-value store)
 - `structopt` was used instead of `clap` to reduce commandline-related boilerplate and increase clarity (PingCAP-suggested)
 
+##### Part 2 (disk-backed key-value store with compacting log file)
+- No 'generations' (epochs) were used to implement log file compaction. 
+  - Compaction is instead always done in a temporary file, and that temporary file is moved to overwrite the existing log once compaction is complete. I think this made the code easier to follow while still maintaining the same robustness as the reference.
+- An in-memory copy of the new index is made during compaction.
+  - The reference borrows values from the index mapping mutably so as not to use twice as much memory when compacting. I think this is a good idea that I will probably use when I try to make compaction happen in a separate thread (assuming I can do so without breaking borrowing rules).
+
 ### Issues
 
-If you're working on the PingCAP talent plan and want to discuss the way I've done something, or if you are just curious about my implementation and feel I have documented my implementation poorly etc, feel free to make an issue about it.
+If you're working on the PingCAP talent plan and want to discuss the way I've done something, or if you are just curious about my implementation, feel free to make an issue about it.
 
 ### Project Structure
 
