@@ -183,17 +183,14 @@ impl KvStore {
     fn compact(&mut self) -> Result<()> {
         let mut compactfile = initialize_compactfile(&self.root)?;
         let mut writer = io::BufWriter::new(&mut compactfile);
-        let mut entries = collections::HashMap::new();
         let mut offset: usize = 0;
 
-        let iter: Vec<(&String, &u64)> = self.entries.iter().collect();
-        for (key, pos) in iter {
-            entries.insert(key.to_owned(), offset as u64);
-
+        for (_, pos) in self.entries.iter_mut() {
             self.log.seek(io::SeekFrom::Start(*pos))?;
             let mut reader = io::BufReader::new(&mut self.log);
             let mut line = String::new();
             reader.read_line(&mut line)?;
+            *pos = offset as u64;
             offset += line.len();
             writer.write_all(&(line.into_bytes()))?;
         }
@@ -204,7 +201,6 @@ impl KvStore {
         let (log, size) = initialize_logfile(&self.root)?;
         self.log = log;
         self.size = size;
-        self.entries = entries;
         Ok(())
     }
 }
