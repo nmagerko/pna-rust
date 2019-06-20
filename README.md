@@ -14,8 +14,6 @@ I will keep track of how my implementation differs from the reference here. I ex
 ##### Part 2 (disk-backed key-value store with compacting log file)
 - No 'generations' (epochs) were used to implement log file compaction. 
   - Compaction is instead always done in a temporary file, and that temporary file is moved to overwrite the existing log once compaction is complete. I think this made the code easier to follow while still maintaining the same robustness as the reference.
-- An in-memory copy of the new index is made during compaction.
-  - The reference borrows values from the index mapping mutably so as not to use twice as much memory when compacting. I think this is a good idea that I will probably use when I try to make compaction happen in a separate thread (assuming I can do so without breaking borrowing rules).
 
 ### Issues
 
