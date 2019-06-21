@@ -10,6 +10,9 @@ pub enum KvError {
     /// An error occured because the requested initialization path was not a directory
     #[fail(display = "the initialization path must be a directory: {}", _0)]
     BadPathError(String),
+    /// An error occured while trying to parse the provided address string
+    #[fail(display = "bad address string: {}", _0)]
+    BadAddressError(String),
     /// A removal request was made with a non-existent key
     #[fail(display = "no such key: {}", _0)]
     BadRemovalError(String),
