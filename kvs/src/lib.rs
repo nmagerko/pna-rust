@@ -20,8 +20,6 @@ pub use engine::KvsEngine;
 pub use error::{KvError, Result};
 pub use kv::KvStore;
 
-/// Common module for binaries
-pub mod cmdline;
 mod engine;
 mod error;
 mod kv;

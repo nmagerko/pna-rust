@@ -3,9 +3,9 @@ extern crate kvs;
 extern crate stderrlog;
 extern crate structopt;
 
-use kvs::cmdline::*;
 use kvs::Result;
 use structopt::StructOpt;
+use std::net::SocketAddr;
 
 fn main() -> Result<()> {
     let opts = Opts::from_args();
@@ -25,10 +25,9 @@ struct Opts {
     cmd: Command,
     #[structopt(
         long = "addr",
-        default_value = r#"127.0.0.1:4000"#,
-        parse(try_from_str = "parse_addr")
+        default_value = r#"127.0.0.1:4000"#
     )]
-    addr: (String, u32),
+    addr: SocketAddr,
     #[structopt(short = "q", long = "quiet")]
     quiet: bool,
 }

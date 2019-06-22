@@ -5,8 +5,8 @@ extern crate log;
 extern crate stderrlog;
 extern crate structopt;
 
-use kvs::cmdline::*;
 use kvs::Result;
+use std::net::SocketAddr;
 use structopt::StructOpt;
 
 fn main() -> Result<()> {
@@ -19,7 +19,7 @@ fn main() -> Result<()> {
         .unwrap();
 
     info!("Version {}", env!("CARGO_PKG_VERSION"));
-    info!("Bind address {}:{}", opts.addr.0, opts.addr.1);
+    info!("Bind address {}", opts.addr);
     info!("Engine {}", opts.engine_name);
     Ok(())
 }
@@ -30,9 +30,9 @@ struct Opts {
     #[structopt(
         long = "addr",
         default_value = r#"127.0.0.1:4000"#,
-        parse(try_from_str = "parse_addr")
+        // parse(try_from_str = "parse_addr")
     )]
-    addr: (String, u32),
+    addr: SocketAddr,
     #[structopt(
         long = "engine",
         default_value = r#"kvs"#,
