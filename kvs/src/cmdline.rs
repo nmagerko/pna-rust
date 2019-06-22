@@ -25,3 +25,13 @@ pub fn parse_addr(addr: &str) -> Result<(String, u32)> {
     };
     Ok((host, port))
 }
+
+/// Parses the verbosity flag, defaulting to INFO-level verbosity
+/// when the flag is not present
+///
+/// # Arguments
+///
+/// `flag` - the verbosity flag (if present)
+pub fn parse_verbosity(flag: &str) -> Result<usize> {
+    return Ok(flag.matches("v").count() + 1);
+}
