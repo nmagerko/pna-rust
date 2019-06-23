@@ -20,14 +20,12 @@ extern crate log;
 
 pub use client::KvClient;
 pub use common::{KvRequest, KvResponse};
-pub use engine::KvsEngine;
+pub use engine::{KvsEngine, KvStore, SledKvsEngine};
 pub use error::{KvError, Result};
-pub use kv::KvStore;
 pub use server::KvServer;
 
 mod client;
 mod common;
 mod engine;
 mod error;
-mod kv;
 mod server;
