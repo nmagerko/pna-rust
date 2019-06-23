@@ -1,5 +1,4 @@
-use crate::{KvError, Result};
-use serde::{Deserialize, Serialize};
+use crate::{KvError, KvRequest, KvsEngine, Result};
 use serde_json::{from_str, to_string};
 use std::io::{BufRead, Seek, Write};
 use std::{collections, env, fs, io, path};
@@ -66,6 +65,32 @@ impl KvStore {
         })
     }
 
+    fn compact(&mut self) -> Result<()> {
+        let mut compactfile = initialize_compactfile(&self.root)?;
+        let mut writer = io::BufWriter::new(&mut compactfile);
+        let mut offset: usize = 0;
+
+        for (_, pos) in self.entries.iter_mut() {
+            self.log.seek(io::SeekFrom::Start(*pos))?;
+            let mut reader = io::BufReader::new(&mut self.log);
+            let mut line = String::new();
+            reader.read_line(&mut line)?;
+            *pos = offset as u64;
+            offset += line.len();
+            writer.write_all(&(line.into_bytes()))?;
+        }
+        drop(writer);
+        drop(compactfile);
+        publish_compactfile(&self.root)?;
+
+        let (log, size) = initialize_logfile(&self.root)?;
+        self.log = log;
+        self.size = size;
+        Ok(())
+    }
+}
+
+impl KvsEngine for KvStore {
     /// Retrieves the value for a given key (if that key is valid)
     ///
     /// # Arguments
@@ -86,7 +111,7 @@ impl KvStore {
     ///     Err(_) => {}
     /// }
     ///```
-    pub fn get(&mut self, key: String) -> Result<Option<String>> {
+    fn get(&mut self, key: String) -> Result<Option<String>> {
         match self.entries.get(&key) {
             Some(offset) => {
                 self.log.seek(io::SeekFrom::Start(*offset))?;
@@ -95,7 +120,7 @@ impl KvStore {
                 reader.read_line(&mut line)?;
 
                 match from_str(&line) {
-                    Ok(Command::Set { value, .. }) => Ok(Some(value)),
+                    Ok(KvRequest::Set { value, .. }) => Ok(Some(value)),
                     Err(err) => Err(KvError::SerdeError(err)),
                     _ => Err(KvError::UnknownError),
                 }
@@ -124,8 +149,8 @@ impl KvStore {
     ///     Err(_) => {}
     /// }
     ///```
-    pub fn set(&mut self, key: String, value: String) -> Result<()> {
-        let cmd = Command::Set {
+    fn set(&mut self, key: String, value: String) -> Result<()> {
+        let cmd = KvRequest::Set {
             key: key.to_owned(),
             value,
         };
@@ -160,10 +185,10 @@ impl KvStore {
     ///     Err(_) => {}
     /// }
     /// ```
-    pub fn remove(&mut self, key: String) -> Result<()> {
+    fn remove(&mut self, key: String) -> Result<()> {
         match self.entries.get(&key) {
             Some(_) => {
-                let cmd = Command::Remove {
+                let cmd = KvRequest::Remove {
                     key: key.to_owned(),
                 };
                 let serialized = format!("{}\n", to_string(&cmd)?).into_bytes();
@@ -178,30 +203,6 @@ impl KvStore {
             }
             None => Err(KvError::BadRemovalError(key)),
         }
-    }
-
-    fn compact(&mut self) -> Result<()> {
-        let mut compactfile = initialize_compactfile(&self.root)?;
-        let mut writer = io::BufWriter::new(&mut compactfile);
-        let mut offset: usize = 0;
-
-        for (_, pos) in self.entries.iter_mut() {
-            self.log.seek(io::SeekFrom::Start(*pos))?;
-            let mut reader = io::BufReader::new(&mut self.log);
-            let mut line = String::new();
-            reader.read_line(&mut line)?;
-            *pos = offset as u64;
-            offset += line.len();
-            writer.write_all(&(line.into_bytes()))?;
-        }
-        drop(writer);
-        drop(compactfile);
-        publish_compactfile(&self.root)?;
-
-        let (log, size) = initialize_logfile(&self.root)?;
-        self.log = log;
-        self.size = size;
-        Ok(())
     }
 }
 
@@ -242,10 +243,10 @@ fn initialize_entries(log: &mut fs::File) -> collections::HashMap<String, u64> {
     for line in reader.lines() {
         let line = line.unwrap();
         match from_str(&line) {
-            Ok(Command::Set { key, .. }) => {
+            Ok(KvRequest::Set { key, .. }) => {
                 entries.insert(key, offset as u64);
             }
-            Ok(Command::Remove { key, .. }) => {
+            Ok(KvRequest::Remove { key, .. }) => {
                 entries.remove(&key);
             }
             _ => {}
@@ -253,10 +254,4 @@ fn initialize_entries(log: &mut fs::File) -> collections::HashMap<String, u64> {
         offset += line.len() + 1;
     }
     entries
-}
-
-#[derive(Serialize, Deserialize)]
-enum Command {
-    Set { key: String, value: String },
-    Remove { key: String },
 }
