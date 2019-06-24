@@ -201,7 +201,7 @@ impl KvsEngine for KvStore {
                 }
                 Ok(())
             }
-            None => Err(KvError::BadRemovalError(key)),
+            None => Err(KvError::BadRemovalError),
         }
     }
 }

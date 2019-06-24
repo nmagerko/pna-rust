@@ -5,7 +5,7 @@ extern crate log;
 extern crate stderrlog;
 extern crate structopt;
 
-use kvs::{KvServer, KvStore, Result};
+use kvs::{KvServer, KvStore, SledKvsEngine, Result};
 use std::net::SocketAddr;
 use structopt::StructOpt;
 
@@ -21,19 +21,19 @@ fn main() -> Result<()> {
     info!("Bind address {}", opts.addr);
     info!("Engine {}", opts.engine_name);
 
-    let mut server = match &opts.engine_name[..] {
+    match &opts.engine_name[..] {
         "kvs" => {
             let engine = KvStore::new().unwrap();
-            KvServer::new(opts.addr, engine)
+            KvServer::new(opts.addr, engine).serve()?;
         }
         "sled" => {
-            unimplemented!("Sled not implemented");
+            let engine = SledKvsEngine::new().unwrap();
+            KvServer::new(opts.addr, engine).serve()?;
         }
         _ => {
             panic!("Disallowed engine type found");
         }
-    };
-    server.serve()?;
+    }
     Ok(())
 }
 
