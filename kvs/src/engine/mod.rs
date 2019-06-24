@@ -21,6 +21,7 @@ pub trait KvsEngine {
     /// - A `KvError::IoError` will occur if file operations fail
     /// - A `KvError::SerdeError` will occur if seralizing content for the logfile fails
     fn set(&mut self, key: String, value: String) -> Result<()>;
+
     /// Removes a key-value relationship. If the key is not present, nothing happens.
     ///
     /// # Arguments
@@ -35,8 +36,8 @@ pub trait KvsEngine {
     fn remove(&mut self, key: String) -> Result<()>;
 }
 
-pub use kv::KvStore;
 pub use self::sled::SledKvsEngine;
+pub use kv::KvStore;
 
 mod kv;
 mod sled;

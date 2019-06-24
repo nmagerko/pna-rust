@@ -20,7 +20,7 @@ extern crate log;
 
 pub use client::KvClient;
 pub use common::{KvRequest, KvResponse};
-pub use engine::{KvsEngine, KvStore, SledKvsEngine};
+pub use engine::{KvStore, KvsEngine, SledKvsEngine};
 pub use error::{KvError, Result};
 pub use server::KvServer;
 

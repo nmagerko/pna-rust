@@ -5,7 +5,7 @@ extern crate log;
 extern crate stderrlog;
 extern crate structopt;
 
-use kvs::{KvServer, KvStore, SledKvsEngine, Result};
+use kvs::{KvServer, KvStore, Result, SledKvsEngine};
 use std::net::SocketAddr;
 use structopt::StructOpt;
 
@@ -23,11 +23,11 @@ fn main() -> Result<()> {
 
     match &opts.engine_name[..] {
         "kvs" => {
-            let engine = KvStore::new().unwrap();
+            let engine = KvStore::new()?;
             KvServer::new(opts.addr, engine).serve()?;
         }
         "sled" => {
-            let engine = SledKvsEngine::new().unwrap();
+            let engine = SledKvsEngine::new()?;
             KvServer::new(opts.addr, engine).serve()?;
         }
         _ => {

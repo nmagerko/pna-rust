@@ -1,3 +1,4 @@
+use crate::common::{identify_env, validate_env};
 use crate::{KvError, KvRequest, KvsEngine, Result};
 use serde_json::{from_str, to_string};
 use std::io::{BufRead, Seek, Write};
@@ -9,6 +10,8 @@ const LOGFILE: &str = "kvs.log";
 const COMPACTFILE: &str = "compact.log";
 /// The size of the log file needed before compaction occurs
 const COMPACT_BYTES: u64 = 1024 * 1024;
+/// The identity of this engine
+const IDENTITY: &'static str = "kvs";
 
 /// Stores key-value relationships
 pub struct KvStore {
@@ -40,6 +43,7 @@ impl KvStore {
     /// # Errors
     ///
     /// - A `KvError::BadPathError` will occur if `path` does not exist or is not a directory
+    /// - A `KvError::EngineMismatchError` will occur if `path` is not compatable with this engine
     /// - A `KvError::IoError` will occur if file operations fail
     /// - A `KvError::SerdeError` will occur if reading from the logfile fails
     ///
@@ -49,10 +53,14 @@ impl KvStore {
     /// let mut kvs = kvs::KvStore::open(std::path::Path::new("/var/db/"));
     /// ```
     pub fn open(path: &path::Path) -> Result<KvStore> {
+        let path_str = path.to_str().unwrap().to_owned();
         if !path.is_dir() {
-            let path_str = path.to_str().unwrap().to_owned();
             return Err(KvError::BadPathError(path_str));
         }
+        if !validate_env(&path, IDENTITY)? {
+            return Err(KvError::EngineMismatchError(path_str));
+        }
+        identify_env(&path, IDENTITY)?;
 
         let root = path.to_path_buf();
         let (mut log, size) = initialize_logfile(&root)?;
