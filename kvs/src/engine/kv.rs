@@ -1,4 +1,3 @@
-use crate::common::{identify_env, validate_env};
 use crate::{KvError, KvRequest, KvsEngine, Result};
 use serde_json::{from_str, to_string};
 use std::io::{BufRead, Seek, Write};
@@ -10,8 +9,6 @@ const LOGFILE: &str = "kvs.log";
 const COMPACTFILE: &str = "compact.log";
 /// The size of the log file needed before compaction occurs
 const COMPACT_BYTES: u64 = 1024 * 1024;
-/// The identity of this engine
-const IDENTITY: &str = "kvs";
 
 /// Stores key-value relationships
 pub struct KvStore {
@@ -57,10 +54,6 @@ impl KvStore {
         if !path.is_dir() {
             return Err(KvError::BadPathError(path_str));
         }
-        if !validate_env(&path, IDENTITY)? {
-            return Err(KvError::EngineMismatchError(path_str));
-        }
-        identify_env(&path, IDENTITY)?;
 
         let root = path.to_path_buf();
         let (mut log, size) = initialize_logfile(&root)?;

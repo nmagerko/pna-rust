@@ -10,15 +10,12 @@ pub enum KvError {
     /// A removal request was made with a non-existent key
     #[fail(display = "Key not found")]
     BadRemovalError,
+    /// An error indicating the requested engine is incompatable with the current directory
+    #[fail(display = "This engine type is incompatable with the current directory")]
+    EngineMismatchError,
     /// An error occured and some clarifying detail is provided
     #[fail(display = "An internal error occured: {}", _0)]
     InternalError(String),
-    /// An error indicating the requested engine is incompatable with the current directory
-    #[fail(
-        display = "This engine type is incompatable with the requested directory ({})",
-        _0
-    )]
-    EngineMismatchError(String),
     /// An error occured because the requested initialization path was not a directory
     #[fail(display = "The initialization path must be a directory: {}", _0)]
     BadPathError(String),

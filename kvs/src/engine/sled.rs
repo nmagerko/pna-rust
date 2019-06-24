@@ -1,9 +1,6 @@
-use crate::common::{identify_env, validate_env};
 use crate::{KvError, KvsEngine, Result};
 use sled::{Db, IVec};
 use std::{env, path, str};
-
-const IDENTITY: &str = "sled";
 
 /// An implementation of the `sled` library that is compatible with this library's key-value store
 /// interface.
@@ -21,12 +18,6 @@ impl SledKvsEngine {
     /// a different engine than this one, an engine mismatch error will be returned.
     pub fn new() -> Result<SledKvsEngine> {
         let cwd = env::current_dir()?;
-        if !validate_env(&cwd, IDENTITY)? {
-            let path_str = cwd.to_str().unwrap().to_owned();
-            return Err(KvError::EngineMismatchError(path_str));
-        }
-        identify_env(&cwd, IDENTITY)?;
-
         let db_path = cwd.join(path::Path::new("sled"));
         let store = Db::start_default(db_path)?;
         Ok(SledKvsEngine { store })
@@ -48,17 +39,20 @@ impl KvsEngine for SledKvsEngine {
     }
 
     fn set(&mut self, key: String, value: String) -> Result<()> {
-        match self.store.set(key, IVec::from(value.into_bytes())) {
-            Ok(_) => Ok(()),
-            Err(err) => Err(KvError::SledError(err)),
-        }
+        self.store.set(key, IVec::from(value.into_bytes()))?;
+        self.store.flush()?;
+        Ok(())
     }
 
     fn remove(&mut self, key: String) -> Result<()> {
-        match self.store.del(key) {
-            Ok(Some(_)) => Ok(()),
-            Ok(None) => Err(KvError::BadRemovalError),
-            Err(err) => Err(KvError::SledError(err)),
+        let rm_result = self.store.del(key);
+        if let Ok(None) = rm_result {
+            return Err(KvError::BadRemovalError);
         }
+        if let Err(err) = rm_result {
+            return Err(KvError::SledError(err));
+        }
+        self.store.flush()?;
+        Ok(())
     }
 }

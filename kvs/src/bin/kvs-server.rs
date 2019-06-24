@@ -5,9 +5,16 @@ extern crate log;
 extern crate stderrlog;
 extern crate structopt;
 
-use kvs::{KvServer, KvStore, Result, SledKvsEngine};
+use kvs::{KvError, KvServer, KvStore, Result, SledKvsEngine};
+use std::env;
+use std::io::{Read, Write};
 use std::net::SocketAddr;
 use structopt::StructOpt;
+
+
+const ENGINE_FILE: &str = ".engine";
+const KVS_ENGINE: &str = "kvs";
+const SLED_ENGINE: &str = "sled";
 
 fn main() -> Result<()> {
     let opts = Opts::from_args();
@@ -21,12 +28,17 @@ fn main() -> Result<()> {
     info!("Bind address {}", opts.addr);
     info!("Engine {}", opts.engine_name);
 
+    if !check_engine(&opts.engine_name)? {
+        return Err(KvError::EngineMismatchError);
+    }
+    set_engine(&opts.engine_name)?;
+
     match &opts.engine_name[..] {
-        "kvs" => {
+        KVS_ENGINE => {
             let engine = KvStore::new()?;
             KvServer::new(opts.addr, engine).serve()?;
         }
-        "sled" => {
+        SLED_ENGINE => {
             let engine = SledKvsEngine::new()?;
             KvServer::new(opts.addr, engine).serve()?;
         }
@@ -50,4 +62,28 @@ struct Opts {
     engine_name: String,
     #[structopt(short = "q", long = "quiet")]
     quiet: bool,
+}
+
+fn check_engine(engine: &str) -> Result<bool> {
+    let path = env::current_dir()?;
+    let engine_file = std::path::Path::new(ENGINE_FILE);
+    let engine_path = path.join(engine_file);
+    if !engine_path.exists() {
+        return Ok(true);
+    }
+
+    let mut content = Vec::new();
+    std::fs::File::open(engine_path)?.read_to_end(&mut content)?;
+    match std::str::from_utf8(&content) {
+        Ok(identity) => Ok(identity == engine),
+        Err(_) => Err(KvError::InternalError("UTF decode error".to_owned())),
+    }
+}
+
+fn set_engine(engine: &str) -> Result<()> {
+    let path = env::current_dir()?;
+    let engine_file = std::path::Path::new(ENGINE_FILE);
+    let engine_path = path.join(engine_file);
+    std::fs::File::create(engine_path)?.write_all(engine.as_bytes())?;
+    Ok(())
 }
