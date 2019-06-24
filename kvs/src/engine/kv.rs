@@ -107,6 +107,7 @@ impl KvsEngine for KvStore {
     /// # Example
     ///
     ///```
+    /// use kvs::KvsEngine;
     /// match kvs::KvStore::new() {
     ///     Ok(mut kvs) => { kvs.get(String::from("key")); }
     ///     Err(_) => {}
@@ -145,6 +146,7 @@ impl KvsEngine for KvStore {
     /// # Example
     ///
     ///```
+    /// use kvs::KvsEngine;
     /// match kvs::KvStore::new() {
     ///     Ok(mut kvs) => { kvs.set(String::from("key"), String::from("value")); }
     ///     Err(_) => {}
@@ -181,6 +183,7 @@ impl KvsEngine for KvStore {
     /// # Example
     ///
     /// ```
+    /// use kvs::KvsEngine;
     /// match kvs::KvStore::new() {
     ///     Ok(mut kvs) => { kvs.remove(String::from("key")); }
     ///     Err(_) => {}
