@@ -29,7 +29,7 @@ impl KvClient {
     ///
     /// An error may occur due to a failure to connect to the server,
     /// problems with serialization/deserialization, or other networking errors
-    pub fn send(&self, request: KvRequest) -> Result<()> {
+    pub fn send(&self, request: KvRequest) -> Result<KvResponse> {
         let mut stream = TcpStream::connect(self.addr)?;
 
         let serialized = bincode::serialize(&request).expect("Failed to serialize request");
@@ -39,20 +39,6 @@ impl KvClient {
         let mut read_buf = Vec::new();
         stream.read_to_end(&mut read_buf)?;
 
-        let deserialized: KvResponse =
-            bincode::deserialize(&read_buf).expect("Failed to deserialize request");
-        match deserialized {
-            KvResponse::Get { value } => match value {
-                Some(value) => println!("{}", value),
-                None => println!("No such key"),
-            },
-            KvResponse::Set | KvResponse::Remove => {
-                println!("Success");
-            }
-            KvResponse::Error { message } => {
-                println!("Error: {}", message);
-            }
-        };
-        Ok(())
+        Ok(bincode::deserialize::<KvResponse>(&read_buf).expect("Failed to deserialize request"))
     }
 }
