@@ -1,5 +1,4 @@
 target/
+blobs/
+sled/
 *.log
-db
-conf
-snap.*
