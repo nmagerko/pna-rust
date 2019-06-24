@@ -50,12 +50,9 @@ impl<E: KvsEngine> KvServer<E> {
 
     fn handle_request(&mut self, stream: &mut TcpStream) {
         let mut request_buf = Vec::new();
-        match stream.read_to_end(&mut request_buf) {
-            Err(err) => {
-                error!("Failed while reading request: {}", err);
-                return;
-            }
-            _ => {}
+        if let Err(err) = stream.read_to_end(&mut request_buf) {
+            error!("Failed while reading request: {}", err);
+            return;
         };
 
         let request = match bincode::deserialize(&request_buf) {
@@ -93,11 +90,8 @@ impl<E: KvsEngine> KvServer<E> {
                 return;
             }
         };
-        match stream.write_all(&serialized) {
-            Err(err) => {
-                error!("Failed while writing response: {}", err);
-            }
-            _ => {}
+        if let Err(err) = stream.write_all(&serialized) {
+            error!("Failed while writing response: {}", err);
         }
     }
 }

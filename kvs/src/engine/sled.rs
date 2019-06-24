@@ -3,7 +3,7 @@ use crate::{KvError, KvsEngine, Result};
 use sled::{Db, IVec};
 use std::{env, path, str};
 
-const IDENTITY: &'static str = "sled";
+const IDENTITY: &str = "sled";
 
 /// An implementation of the `sled` library that is compatible with this library's key-value store
 /// interface.

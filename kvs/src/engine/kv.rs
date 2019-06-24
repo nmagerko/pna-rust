@@ -11,7 +11,7 @@ const COMPACTFILE: &str = "compact.log";
 /// The size of the log file needed before compaction occurs
 const COMPACT_BYTES: u64 = 1024 * 1024;
 /// The identity of this engine
-const IDENTITY: &'static str = "kvs";
+const IDENTITY: &str = "kvs";
 
 /// Stores key-value relationships
 pub struct KvStore {
