@@ -1,5 +1,5 @@
 use crate::{KvsEngine, KvError, Result};
-use std::{env, str};
+use std::{env, path, str};
 use sled::{Db, IVec};
 
 /// An implementation of the `sled` library that is compatible with this library's key-value store
@@ -17,7 +17,8 @@ impl SledKvsEngine {
     /// failure while starting the sled instance
     pub fn new() -> Result<SledKvsEngine> {
         let cwd = env::current_dir()?;
-        let store = Db::start_default(cwd)?;
+        let db_path = cwd.join(path::Path::new("sled"));
+        let store = Db::start_default(db_path)?;
         Ok(SledKvsEngine { store })
     }
 }
