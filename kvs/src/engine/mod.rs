@@ -7,7 +7,7 @@ pub trait KvsEngine {
     /// # Arguments
     ///
     /// `key` - the string with which a value may be associated
-    fn get(&mut self, key: String) -> Result<Option<String>>;
+    fn get(&self, key: String) -> Result<Option<String>>;
 
     /// Sets a value for a given key. If the key is already present, it is overwrriten.
     ///
@@ -20,7 +20,7 @@ pub trait KvsEngine {
     ///
     /// - A `KvError::IoError` will occur if file operations fail
     /// - A `KvError::SerdeError` will occur if seralizing content for the logfile fails
-    fn set(&mut self, key: String, value: String) -> Result<()>;
+    fn set(&self, key: String, value: String) -> Result<()>;
 
     /// Removes a key-value relationship. If the key is not present, nothing happens.
     ///
@@ -33,7 +33,7 @@ pub trait KvsEngine {
     /// - A `KvError::BadRemovalError` will occur if the requested key was not found
     /// - A `KvError::IoError` will occur if file operations fail
     /// - A `KvError::SerdeError` will occur if seralizing content for the logfile fails
-    fn remove(&mut self, key: String) -> Result<()>;
+    fn remove(&self, key: String) -> Result<()>;
 }
 
 pub use self::sled::SledKvsEngine;

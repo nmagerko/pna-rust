@@ -20,8 +20,12 @@ extern crate log;
 
 pub use engine::{KvStore, KvsEngine, SledKvsEngine};
 pub use error::{KvsError, Result};
-pub use net::{KvsClient, KvsServer, KvsRequest, KvsResponse};
+pub use net::{KvsClient, KvsRequest, KvsResponse, KvsServer};
+pub use thread as thread_pool; // the pna testcases need this specific export
+
+/// Provides utilities for threading
+pub mod thread;
 
 mod engine;
-mod net;
 mod error;
+mod net;

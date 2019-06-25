@@ -66,7 +66,10 @@ impl KvStore {
         })
     }
 
-    fn compact(&mut self) -> Result<()> {
+    fn compact(&self) -> Result<()> {
+        // TODO
+        unimplemented!();
+
         let mut compactfile = initialize_compactfile(&self.root)?;
         let mut writer = io::BufWriter::new(&mut compactfile);
         let mut offset: usize = 0;
@@ -113,7 +116,10 @@ impl KvsEngine for KvStore {
     ///     Err(_) => {}
     /// }
     ///```
-    fn get(&mut self, key: String) -> Result<Option<String>> {
+    fn get(&self, key: String) -> Result<Option<String>> {
+        // TODO
+        unimplemented!();
+
         match self.entries.get(&key) {
             Some(offset) => {
                 self.log.seek(io::SeekFrom::Start(*offset))?;
@@ -152,7 +158,10 @@ impl KvsEngine for KvStore {
     ///     Err(_) => {}
     /// }
     ///```
-    fn set(&mut self, key: String, value: String) -> Result<()> {
+    fn set(&self, key: String, value: String) -> Result<()> {
+        // TODO
+        unimplemented!();
+
         let cmd = KvsRequest::Set {
             key: key.to_owned(),
             value,
@@ -189,7 +198,10 @@ impl KvsEngine for KvStore {
     ///     Err(_) => {}
     /// }
     /// ```
-    fn remove(&mut self, key: String) -> Result<()> {
+    fn remove(&self, key: String) -> Result<()> {
+        // TODO
+        unimplemented!();
+        
         match self.entries.get(&key) {
             Some(_) => {
                 let cmd = KvsRequest::Remove {
@@ -207,6 +219,12 @@ impl KvsEngine for KvStore {
             }
             None => Err(KvsError::BadRemovalError),
         }
+    }
+}
+
+impl Clone for KvStore {
+    fn clone(&self) -> KvStore {
+        unimplemented!();
     }
 }
 

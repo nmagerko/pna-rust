@@ -33,7 +33,7 @@ impl SledKvsEngine {
 }
 
 impl KvsEngine for SledKvsEngine {
-    fn get(&mut self, key: String) -> Result<Option<String>> {
+    fn get(&self, key: String) -> Result<Option<String>> {
         match self.store.get(key)? {
             Some(value) => match str::from_utf8(value.as_ref()) {
                 Ok(value) => Ok(Some(value.to_owned())),
@@ -46,13 +46,13 @@ impl KvsEngine for SledKvsEngine {
         }
     }
 
-    fn set(&mut self, key: String, value: String) -> Result<()> {
+    fn set(&self, key: String, value: String) -> Result<()> {
         self.store.set(key, IVec::from(value.into_bytes()))?;
         self.store.flush()?;
         Ok(())
     }
 
-    fn remove(&mut self, key: String) -> Result<()> {
+    fn remove(&self, key: String) -> Result<()> {
         let rm_result = self.store.del(key);
         if let Ok(None) = rm_result {
             return Err(KvsError::BadRemovalError);
@@ -62,5 +62,11 @@ impl KvsEngine for SledKvsEngine {
         }
         self.store.flush()?;
         Ok(())
+    }
+}
+
+impl Clone for SledKvsEngine {
+    fn clone(&self) -> SledKvsEngine {
+        unimplemented!();
     }
 }
