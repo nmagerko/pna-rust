@@ -3,7 +3,7 @@ extern crate kvs;
 extern crate stderrlog;
 extern crate structopt;
 
-use kvs::{KvClient, KvRequest, KvResponse, Result};
+use kvs::{KvsClient, KvsRequest, KvsResponse, Result};
 use std::net::SocketAddr;
 use std::process::exit;
 use structopt::StructOpt;
@@ -18,26 +18,26 @@ fn main() -> Result<()> {
 
     let response = match opts.cmd {
         Command::Get { addr, key } => {
-            let client = KvClient::new(addr);
-            client.send(KvRequest::Get { key })
+            let client = KvsClient::new(addr);
+            client.send(KvsRequest::Get { key })
         }
         Command::Set { addr, key, value } => {
-            let client = KvClient::new(addr);
-            client.send(KvRequest::Set { key, value })
+            let client = KvsClient::new(addr);
+            client.send(KvsRequest::Set { key, value })
         }
         Command::Remove { addr, key } => {
-            let client = KvClient::new(addr);
-            client.send(KvRequest::Remove { key })
+            let client = KvsClient::new(addr);
+            client.send(KvsRequest::Remove { key })
         }
     }?;
     match response {
-        KvResponse::Get { value } => match value {
+        KvsResponse::Get { value } => match value {
             Some(value) => println!("{}", value),
             None => {
                 println!("Key not found");
             }
         },
-        KvResponse::Error { message } => {
+        KvsResponse::Error { message } => {
             eprintln!("{}", message);
             exit(1);
         }

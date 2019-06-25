@@ -1,4 +1,4 @@
-use crate::{KvError, KvsEngine, Result};
+use crate::{KvsError, KvsEngine, Result};
 use sled::{Db, IVec};
 use std::{env, path, str};
 
@@ -39,7 +39,7 @@ impl KvsEngine for SledKvsEngine {
                 Ok(value) => Ok(Some(value.to_owned())),
                 Err(err) => {
                     warn!("Sled UTF8 decode error: {}", err);
-                    Err(KvError::UnknownError)
+                    Err(KvsError::UnknownError)
                 }
             },
             None => Ok(None),
@@ -55,10 +55,10 @@ impl KvsEngine for SledKvsEngine {
     fn remove(&mut self, key: String) -> Result<()> {
         let rm_result = self.store.del(key);
         if let Ok(None) = rm_result {
-            return Err(KvError::BadRemovalError);
+            return Err(KvsError::BadRemovalError);
         }
         if let Err(err) = rm_result {
-            return Err(KvError::SledError(err));
+            return Err(KvsError::SledError(err));
         }
         self.store.flush()?;
         Ok(())

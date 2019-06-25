@@ -5,7 +5,7 @@ extern crate log;
 extern crate stderrlog;
 extern crate structopt;
 
-use kvs::{KvError, KvServer, KvStore, Result, SledKvsEngine};
+use kvs::{KvsError, KvsServer, KvStore, Result, SledKvsEngine};
 use std::env;
 use std::io::{Read, Write};
 use std::net::SocketAddr;
@@ -29,18 +29,18 @@ fn main() -> Result<()> {
     info!("Engine {}", opts.engine_name);
 
     if !check_engine(&opts.engine_name)? {
-        return Err(KvError::EngineMismatchError);
+        return Err(KvsError::EngineMismatchError);
     }
     set_engine(&opts.engine_name)?;
 
     match &opts.engine_name[..] {
         KVS_ENGINE => {
             let engine = KvStore::new()?;
-            KvServer::new(opts.addr, engine).serve()?;
+            KvsServer::new(opts.addr, engine).serve()?;
         }
         SLED_ENGINE => {
             let engine = SledKvsEngine::new()?;
-            KvServer::new(opts.addr, engine).serve()?;
+            KvsServer::new(opts.addr, engine).serve()?;
         }
         _ => {
             panic!("Disallowed engine type found");
@@ -76,7 +76,7 @@ fn check_engine(engine: &str) -> Result<bool> {
     std::fs::File::open(engine_path)?.read_to_end(&mut content)?;
     match std::str::from_utf8(&content) {
         Ok(identity) => Ok(identity == engine),
-        Err(_) => Err(KvError::InternalError("UTF decode error".to_owned())),
+        Err(_) => Err(KvsError::InternalError("UTF decode error".to_owned())),
     }
 }
 

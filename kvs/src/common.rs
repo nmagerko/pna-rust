@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 
-/// A serializiable representation of a KvEngine command
+/// A serializiable representation of a KvsEngine command
 #[derive(Debug, Serialize, Deserialize)]
-pub enum KvRequest {
+pub enum KvsRequest {
     /// Representation of getting a value for a given key
     Get {
         /// The key to retrieve
@@ -23,8 +23,8 @@ pub enum KvRequest {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-/// A serializable representation of a KvEngine command
-pub enum KvResponse {
+/// A serializable representation of a KvsEngine command
+pub enum KvsResponse {
     /// Representation of a successful Get
     Get {
         /// The retrieved value

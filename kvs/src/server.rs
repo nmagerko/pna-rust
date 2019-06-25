@@ -1,24 +1,24 @@
 extern crate bincode;
 
-use crate::{KvRequest, KvResponse, KvsEngine, Result};
+use crate::{KvsRequest, KvsResponse, KvsEngine, Result};
 use std::io::{Read, Write};
 use std::net::{Shutdown, SocketAddr, TcpListener, TcpStream};
 
 /// A server for hosting a key value store
-pub struct KvServer<E: KvsEngine> {
+pub struct KvsServer<E: KvsEngine> {
     addr: SocketAddr,
     engine: E,
 }
 
-impl<E: KvsEngine> KvServer<E> {
+impl<E: KvsEngine> KvsServer<E> {
     /// Creates a new server ready to accept key-value requests
     ///
     /// # Arguments
     ///
     /// - addr - the address to bind to
     /// - engine - the engine to use for storage
-    pub fn new(addr: SocketAddr, engine: E) -> KvServer<E> {
-        KvServer { addr, engine }
+    pub fn new(addr: SocketAddr, engine: E) -> KvsServer<E> {
+        KvsServer { addr, engine }
     }
 
     /// Waits for incoming connections indefinitely (until killed)
@@ -63,21 +63,21 @@ impl<E: KvsEngine> KvServer<E> {
             }
         };
         let response = match request {
-            KvRequest::Get { key } => match self.engine.get(key) {
-                Ok(value) => KvResponse::Get { value },
-                Err(err) => KvResponse::Error {
+            KvsRequest::Get { key } => match self.engine.get(key) {
+                Ok(value) => KvsResponse::Get { value },
+                Err(err) => KvsResponse::Error {
                     message: err.to_string(),
                 },
             },
-            KvRequest::Remove { key } => match self.engine.remove(key) {
-                Ok(_) => KvResponse::Remove {},
-                Err(err) => KvResponse::Error {
+            KvsRequest::Remove { key } => match self.engine.remove(key) {
+                Ok(_) => KvsResponse::Remove {},
+                Err(err) => KvsResponse::Error {
                     message: err.to_string(),
                 },
             },
-            KvRequest::Set { key, value } => match self.engine.set(key, value) {
-                Ok(_) => KvResponse::Set {},
-                Err(err) => KvResponse::Error {
+            KvsRequest::Set { key, value } => match self.engine.set(key, value) {
+                Ok(_) => KvsResponse::Set {},
+                Err(err) => KvsResponse::Error {
                     message: err.to_string(),
                 },
             },

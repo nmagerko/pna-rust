@@ -1,9 +1,9 @@
-/// Alias for `Result<T, E>` where `E: KvError`
-pub type Result<T> = std::result::Result<T, KvError>;
+/// Alias for `Result<T, E>` where `E: KvsError`
+pub type Result<T> = std::result::Result<T, KvsError>;
 
 /// An enumeration of possible errors in the `kvs` project
 #[derive(Debug, Fail)]
-pub enum KvError {
+pub enum KvsError {
     /// An error occured and no more detail could be provided
     #[fail(display = "An unknown error occured")]
     UnknownError,
@@ -33,20 +33,20 @@ pub enum KvError {
     SledError(#[cause] sled::Error),
 }
 
-impl From<std::io::Error> for KvError {
-    fn from(err: std::io::Error) -> KvError {
-        KvError::IoError(err)
+impl From<std::io::Error> for KvsError {
+    fn from(err: std::io::Error) -> KvsError {
+        KvsError::IoError(err)
     }
 }
 
-impl From<serde_json::Error> for KvError {
-    fn from(err: serde_json::Error) -> KvError {
-        KvError::SerdeError(err)
+impl From<serde_json::Error> for KvsError {
+    fn from(err: serde_json::Error) -> KvsError {
+        KvsError::SerdeError(err)
     }
 }
 
-impl From<sled::Error> for KvError {
-    fn from(err: sled::Error) -> KvError {
-        KvError::SledError(err)
+impl From<sled::Error> for KvsError {
+    fn from(err: sled::Error) -> KvsError {
+        KvsError::SledError(err)
     }
 }

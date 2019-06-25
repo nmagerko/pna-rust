@@ -1,4 +1,4 @@
-use crate::{KvError, KvRequest, KvsEngine, Result};
+use crate::{KvsError, KvsRequest, KvsEngine, Result};
 use serde_json::{from_str, to_string};
 use std::io::{BufRead, Seek, Write};
 use std::{collections, env, fs, io, path};
@@ -23,7 +23,7 @@ impl KvStore {
     ///
     /// # Errors
     ///
-    /// - A `KvError::IoError` will occur if the current directory cannot be obtained
+    /// - A `KvsError::IoError` will occur if the current directory cannot be obtained
     /// - For all other errors, see `KvStore::open`
     pub fn new() -> Result<KvStore> {
         let cwd = env::current_dir()?;
@@ -39,10 +39,10 @@ impl KvStore {
     ///
     /// # Errors
     ///
-    /// - A `KvError::BadPathError` will occur if `path` does not exist or is not a directory
-    /// - A `KvError::EngineMismatchError` will occur if `path` is not compatable with this engine
-    /// - A `KvError::IoError` will occur if file operations fail
-    /// - A `KvError::SerdeError` will occur if reading from the logfile fails
+    /// - A `KvsError::BadPathError` will occur if `path` does not exist or is not a directory
+    /// - A `KvsError::EngineMismatchError` will occur if `path` is not compatable with this engine
+    /// - A `KvsError::IoError` will occur if file operations fail
+    /// - A `KvsError::SerdeError` will occur if reading from the logfile fails
     ///
     /// # Example
     ///
@@ -52,7 +52,7 @@ impl KvStore {
     pub fn open(path: &path::Path) -> Result<KvStore> {
         let path_str = path.to_str().unwrap().to_owned();
         if !path.is_dir() {
-            return Err(KvError::BadPathError(path_str));
+            return Err(KvsError::BadPathError(path_str));
         }
 
         let root = path.to_path_buf();
@@ -100,9 +100,9 @@ impl KvsEngine for KvStore {
     ///
     /// # Errors
     ///
-    /// - A `KvError::UnknownError` will occur for all internal errors
-    /// - A `KvError::IoError` will occur if file operations fail
-    /// - A `KvError::SerdeError` will occur if reading from the logfile fails
+    /// - A `KvsError::UnknownError` will occur for all internal errors
+    /// - A `KvsError::IoError` will occur if file operations fail
+    /// - A `KvsError::SerdeError` will occur if reading from the logfile fails
     ///
     /// # Example
     ///
@@ -122,9 +122,9 @@ impl KvsEngine for KvStore {
                 reader.read_line(&mut line)?;
 
                 match from_str(&line) {
-                    Ok(KvRequest::Set { value, .. }) => Ok(Some(value)),
-                    Err(err) => Err(KvError::SerdeError(err)),
-                    _ => Err(KvError::UnknownError),
+                    Ok(KvsRequest::Set { value, .. }) => Ok(Some(value)),
+                    Err(err) => Err(KvsError::SerdeError(err)),
+                    _ => Err(KvsError::UnknownError),
                 }
             }
             None => Ok(None),
@@ -140,8 +140,8 @@ impl KvsEngine for KvStore {
     ///
     /// # Errors
     ///
-    /// - A `KvError::IoError` will occur if file operations fail
-    /// - A `KvError::SerdeError` will occur if seralizing content for the logfile fails
+    /// - A `KvsError::IoError` will occur if file operations fail
+    /// - A `KvsError::SerdeError` will occur if seralizing content for the logfile fails
     ///
     /// # Example
     ///
@@ -153,7 +153,7 @@ impl KvsEngine for KvStore {
     /// }
     ///```
     fn set(&mut self, key: String, value: String) -> Result<()> {
-        let cmd = KvRequest::Set {
+        let cmd = KvsRequest::Set {
             key: key.to_owned(),
             value,
         };
@@ -176,9 +176,9 @@ impl KvsEngine for KvStore {
     ///
     /// # Errors
     ///
-    /// - A `KvError::BadRemovalError` will occur if the requested key was not found
-    /// - A `KvError::IoError` will occur if file operations fail
-    /// - A `KvError::SerdeError` will occur if seralizing content for the logfile fails
+    /// - A `KvsError::BadRemovalError` will occur if the requested key was not found
+    /// - A `KvsError::IoError` will occur if file operations fail
+    /// - A `KvsError::SerdeError` will occur if seralizing content for the logfile fails
     ///
     /// # Example
     ///
@@ -192,7 +192,7 @@ impl KvsEngine for KvStore {
     fn remove(&mut self, key: String) -> Result<()> {
         match self.entries.get(&key) {
             Some(_) => {
-                let cmd = KvRequest::Remove {
+                let cmd = KvsRequest::Remove {
                     key: key.to_owned(),
                 };
                 let serialized = format!("{}\n", to_string(&cmd)?).into_bytes();
@@ -205,7 +205,7 @@ impl KvsEngine for KvStore {
                 }
                 Ok(())
             }
-            None => Err(KvError::BadRemovalError),
+            None => Err(KvsError::BadRemovalError),
         }
     }
 }
@@ -247,10 +247,10 @@ fn initialize_entries(log: &mut fs::File) -> collections::HashMap<String, u64> {
     for line in reader.lines() {
         let line = line.unwrap();
         match from_str(&line) {
-            Ok(KvRequest::Set { key, .. }) => {
+            Ok(KvsRequest::Set { key, .. }) => {
                 entries.insert(key, offset as u64);
             }
-            Ok(KvRequest::Remove { key, .. }) => {
+            Ok(KvsRequest::Remove { key, .. }) => {
                 entries.remove(&key);
             }
             _ => {}

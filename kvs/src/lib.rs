@@ -18,11 +18,11 @@ extern crate failure_derive;
 #[macro_use]
 extern crate log;
 
-pub use client::KvClient;
-pub use common::{KvRequest, KvResponse};
+pub use client::KvsClient;
+pub use common::{KvsRequest, KvsResponse};
 pub use engine::{KvStore, KvsEngine, SledKvsEngine};
-pub use error::{KvError, Result};
-pub use server::KvServer;
+pub use error::{KvsError, Result};
+pub use server::KvsServer;
 
 mod client;
 mod common;
