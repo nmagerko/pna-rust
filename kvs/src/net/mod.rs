@@ -40,3 +40,9 @@ pub enum KvsResponse {
         message: String,
     },
 }
+
+pub use client::KvsClient;
+pub use server::KvsServer;
+
+mod client;
+mod server;
