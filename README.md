@@ -14,6 +14,14 @@ I will keep track of how my implementation differs from the reference here. I ex
 ##### Part 2 (disk-backed key-value store with compacting log file)
 - No 'generations' (epochs) were used to implement log file compaction. 
   - Compaction is instead always done in a temporary file, and that temporary file is moved to overwrite the existing log once compaction is complete. I think this made the code easier to follow while still maintaining the same robustness as the reference.
+  
+##### Part 3 (networked disk-backed key-value store with multiple engines)
+- Simplified read/write benchmarking
+  - The instructions for brenchmarking seemed a bit complicated for comparing performance, so I simplified them. I believe these simplified benchmarks will be sufficient for determining relative performance.
+- Binary protocol for client/server communication
+  - Although I could have used a JSON protocol as was done in the reference, I felt it would probably be best to have a more compact format for sending data over the network.
+- Single request per connection
+  - Since the CLI mainly expects one-off requests from client to server, I chose to implement a protocol that best fit that use case (yet in a more general setting, I could see why being able to batch requests makes sense). Still, since I was using a binary protocol, I would have to be careful about how I add and parse delimiters in the requests/responses.
 
 ### Issues
 
