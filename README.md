@@ -18,7 +18,3 @@ I will keep track of how my implementation differs from the reference here. I ex
 ### Issues
 
 If you're working on the PingCAP talent plan and want to discuss the way I've done something, or if you are just curious about my implementation, feel free to make an issue about it.
-
-### Project Structure
-
-The top-level `kvs` directory is included due to a structural mishap when I was learning to use Cargo. I'll leave it that way as an acknowledgement of my imperfections :grimacing:. Mea culpa!
