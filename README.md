@@ -4,9 +4,9 @@ This is my implementation of PingCAP's [Practical Networking Applications](https
 
 In short, the PNA project consists of labs that work towards the development of a "high-performance, networked, parallel and asynchronous key/value store." Tests are provided to help determine correctness while working through these labs. 
 
-### Deviations
+### Commentary
 
-I will keep track of how my implementation differs from the reference here. I expect that these will involve the PingCAP-suggested extensions, but they may also include reflections about performance (good or bad) and simplicity.
+I will keep track of how my code differs from the reference for each part, as well as implementation difficulties I run into along the way. I will try not to look at the reference at all until I've passed the test cases with the exception being when I get pretty stuck (which I will note below).
 
 ##### Part 1 (in-memory key-value store)
 - `structopt` was used instead of `clap` to reduce commandline-related boilerplate and increase clarity (PingCAP-suggested)
